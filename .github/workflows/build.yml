@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - release/*
+      - hotfix/*
   workflow_dispatch:
 # Variables
 env:
@@ -54,13 +55,14 @@ jobs:
           zip -r ./app.zip ${{ env.APP_DIRECTORY }}/.next ${{ env.APP_DIRECTORY }}/next.config.mjs ${{ env.APP_DIRECTORY }}/public ${{ env.APP_DIRECTORY }}/package.json ${{ env.APP_DIRECTORY }}/package-lock.json ${{ env.INFRASTRUCTURE_DIRECTORY }}
           PACKAGE_VERSION=$(cat ./${{ env.APP_DIRECTORY }}/package.json | jq -r '.version')
           LOG=$(git log ${{ github.ref_name }} --pretty=format:"%s by %aN in %h" --no-merges)
-          release_status=$(gh release create v$PACKAGE_VERSION --title v$PACKAGE_VERSION --target ${{ github.ref_name }} --prerelease --notes $LOG 2>&1)
+          echo "$LOG">release-notes.log
+          release_status=$(gh release create v$PACKAGE_VERSION --title v$PACKAGE_VERSION --target ${{ github.ref_name }} --notes-file release-notes.log --prerelease 2>&1)
           if [[ $release_status == *"422"* ]]; then
             echo "release $PACKAGE_VERSION already exists"
             exit 1;
           else
             echo "uploading to v$PACKAGE_VERSION release"
-            gh release upload v$PACKAGE_VERSION ./app.zip --clobber
+            gh release upload v$PACKAGE_VERSION ./app.zip
           fi
         env:
           GH_TOKEN: ${{ github.token }}
