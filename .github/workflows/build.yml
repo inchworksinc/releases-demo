@@ -2,11 +2,11 @@
 name: build
 # Triggers
 on:
-  push:
-    branches:
-      - main
-      - release/*
-      - hotfix/*
+  # push:
+  #   branches:
+  #     - main
+  #     - release/*
+  #     - hotfix/*
   workflow_dispatch:
 # Variables
 env:
