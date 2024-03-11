@@ -27,7 +27,7 @@ on:
 env:
   RESOURCE_GROUP_NAME: rg-appserviceslots-dev-eastus2-01
   APP_NAME: app-iw-appservice-slots
-  APP_FOLDER: site
+  APP_FOLDER: app
   APPLICATION_ARTIFACT_FOLDER: app-artifact
 jobs:
   prepare-artifacts:
