@@ -110,7 +110,7 @@ jobs:
       - name: Creating a zip deployment file
 
         run: zip -r ../../../${{ env.APP_FOLDER }}.zip ./
-        working-directory: ${{ env.APPLICATION_ARTIFACT_FOLDER }}/${{env.APP_FOLDER}}/githubaction-slots
+        working-directory: ${{ env.APPLICATION_ARTIFACT_FOLDER }}/${{env.APP_FOLDER}}/site
       - name: Deploying the web application
         run: az webapp deploy --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --src-path ./${{env.APP_FOLDER}}.zip --slot ${{ inputs.slot_name }} --clean true --restart true --type zip --debug --async
       - name: start slot
