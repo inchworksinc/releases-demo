@@ -1,0 +1,28 @@
+name: prod-deploy
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Artifact Source"
+        required: true
+        type: choice
+        options:
+          - releases
+      artifact-identifier:
+        description: release tag
+        type: string
+        required: true
+permissions:
+  id-token: write
+  contents: read
+  actions: write
+jobs:
+  deploy:
+    uses: inchworksinc/appservice-slots/.github/workflows/deploy.yml@main
+    with:
+      template_file_path: infrastructure/app-service.bicep
+      package: app
+      slot_name: staging
+      source: ${{ inputs.source }}
+      artifact-identifier: ${{ inputs.artifact-identifier }}
+    secrets: inherit
