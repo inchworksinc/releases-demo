@@ -1,0 +1,150 @@
+name: deploy
+on:
+  workflow_call:
+    inputs:
+      template_file_path:
+        required: true
+        description: Path to bicep template to deploy infrastructure.
+        type: string
+      package:
+        required: true
+        description: Artifact path to deploy on webapp
+        type: string
+      slot_name:
+        required: false
+        description: Web app slot to deploy the Artifact
+        type: string
+        default: production
+      source:
+        required: true
+        description: source to pull artifacts from
+        type: string        
+      artifact-identifier:
+        required: true
+        description: release tag or workflow run number
+        type: string
+
+env:
+  RESOURCE_GROUP_NAME: rg-appserviceslots-dev-eastus2-01
+  APP_NAME: app-iw-appservice-slots
+  APP_FOLDER: site
+  APPLICATION_ARTIFACT_FOLDER: app-artifact
+jobs:
+  prepare-artifacts:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    environment: ${{ inputs.environment }}
+    # deployment is triggered when:
+    # 1. Automated build is successful
+    # 2. Deployment is run manually
+    # 3. Deployment is schedule
+    if:
+      ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.event != 'workflow_dispatch' && github.event.workflow_run.conclusion == 'success') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' }}
+    steps:
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      # getting latest built artifacts from main branch, when no build Id is available
+      - name: Downloading latest build artifact
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_run' }}
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: build.yml
+          branch: "main"
+          # getting only the packages build off of CMS master for scheduled and automated flows
+          name: ${{ inputs.package }}
+          search_artifacts: true
+          path: ${{ env.APPLICATION_ARTIFACT_FOLDER }}
+      # getting artifacts for an specific build Id, manually run
+      - name: Downloading artifacts by build ID
+        if: ${{ inputs.source == 'build-pipeline' && github.event_name == 'workflow_dispatch' }}
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: build.yml
+          run_id: ${{ inputs.artifact-identifier }}
+          path: ${{ env.APPLICATION_ARTIFACT_FOLDER }}
+      - name: Downloading artifacts from releases
+        if: ${{ inputs.source == 'releases' && github.event_name == 'workflow_dispatch' }}
+        run: |
+          gh release download ${{ inputs.artifact-identifier}} --repo https://github.com/inchworksinc/appservice-slots
+          mkdir -p ./${{env.APPLICATION_ARTIFACT_FOLDER}}/app
+          unzip app.zip -d ${{env.APPLICATION_ARTIFACT_FOLDER}}/app
+        env: 
+          GH_TOKEN: ${{ github.token }}      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+      - name: Validating Azure infrastructure
+        uses: azure/arm-deploy@v2
+        with:
+          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
+          template: ${{ env.APPLICATION_ARTIFACT_FOLDER }}/${{ env.APP_FOLDER }}/${{inputs.template_file_path }}
+          deploymentmode: Validate
+          scope: resourcegroup
+          failOnStdErr: false
+      - name: Deploying Azure infrastructure
+        uses: azure/arm-deploy@v2
+        with:
+          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
+          template: ${{ env.APPLICATION_ARTIFACT_FOLDER }}/${{ env.APP_FOLDER }}/${{inputs.template_file_path }}
+          deploymentmode: Incremental
+          scope: resourcegroup
+          failOnStdErr: false
+      - name: Configuring the web application
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: ${{ env.APP_NAME }}
+          slot-name: ${{ inputs.slot_name }}
+          app-settings-json: '[{
+            "name":"CF_SPACE_ID",
+            "value":"SPACE_ID"
+            }]'
+      - name: Creating a zip deployment file
+
+        run: zip -r ../../../${{ env.APP_FOLDER }}.zip ./
+        working-directory: ${{ env.APPLICATION_ARTIFACT_FOLDER }}/${{env.APP_FOLDER}}/githubaction-slots
+      - name: Deploying the web application
+        run: az webapp deploy --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --src-path ./${{env.APP_FOLDER}}.zip --slot ${{ inputs.slot_name }} --clean true --restart true --type zip --debug --async
+      - name: start slot
+        run: az webapp start --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --slot ${{ inputs.slot_name }} --debug
+      - name: Checking health endpoint of the app
+        run: |
+          timeout --foreground -s TERM 300s bash -c \
+          'while [[ "$(curl -s -o /dev/null -m 3 -L -w ''%{http_code}'' $URL)" != "200" ]];\
+            do echo "Waiting for $URL" && sleep 10;\
+           done' $URL
+          TIMEOUT_RETURN="$?"
+          echo ${TIMEOUT_RETURN}
+          if [[ "${TIMEOUT_RETURN}" == 0 ]]; then
+            echo "$URL is UP!"
+          else
+            echo -e "\n[-] $URL - timeout or other error! [$TIMEOUT_RETURN]"
+            exit
+          fi
+        env:
+          URL: https://${{ env.APP_NAME }}-${{ inputs.slot_name }}.azurewebsites.net
+      - name: Swap slots
+        run: az webapp deployment slot swap -s staging -n ${{ env.APP_NAME }} -g ${{ env.RESOURCE_GROUP_NAME }} --target-slot production
+      - name: Login to Azure again
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+      - name: Stop slot 
+        run: az webapp stop --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --slot staging
+      - name: Mark release latest
+        if: ${{ inputs.environment == 'prd' }}
+        run: |
+          gh release edit ${{ inputs.artifact-identifier }} --latest --repo https://github.com/inchworksinc/appservice-slots
+        env:
+          GH_TOKEN: ${{ github.token }}
+  
