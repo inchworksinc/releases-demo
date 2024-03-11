@@ -18,7 +18,7 @@ permissions:
   actions: write
 jobs:
   deploy:
-    uses: inchworksinc/appservice-slots/.github/workflows/deploy.yml@main
+    uses: inchworksinc/releases-demo/.github/workflows/deploy.yml@main
     with:
       template_file_path: infrastructure/app-service.bicep
       package: app
