@@ -71,7 +71,7 @@ jobs:
       - name: Downloading artifacts from releases
         if: ${{ inputs.source == 'releases' && github.event_name == 'workflow_dispatch' }}
         run: |
-          gh release download ${{ inputs.artifact-identifier}} --repo https://github.com/inchworksinc/appservice-slots
+          gh release download ${{ inputs.artifact-identifier}} --repo https://github.com/inchworksinc/releases-demo
           mkdir -p ./${{env.APPLICATION_ARTIFACT_FOLDER}}/app
           unzip app.zip -d ${{env.APPLICATION_ARTIFACT_FOLDER}}/app
         env: 
