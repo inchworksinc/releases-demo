@@ -62,12 +62,11 @@ jobs:
           echo "Getting latest release TAG for commit history"
           LATEST_RELEASE_TAG=$(gh release list --exclude-drafts --exclude-pre-releases --json isLatest,tagName --jq '.[]| select(.isLatest)|.tagName')
           if [ -z "${LATEST_RELEASE_TAG}" ];then
-            echo 'Defaulting to main branch since there is no latest release'
-            LATEST_RELEASE_TAG=main
+            LOG=$(git log ${{ github.ref_name }} --pretty=format:"%s by %aN in %h" --no-merges)
+          else
+            LOG=$(git log $LATEST_RELEASE_TAG..${{ github.ref_name }} --pretty=format:"%s by %aN in %h" --no-merges)
           fi
           echo "Latest release tag $LATEST_RELEASE_TAG"
-          
-          LOG=$(git log $LATEST_RELEASE_TAG..${{ github.ref_name }} --pretty=format:"%s by %aN in %h" --no-merges)
           echo "$LOG">release-notes.log
           release_status=$(gh release create v$PACKAGE_VERSION --title v$PACKAGE_VERSION --target ${{ github.ref_name }} --notes-file release-notes.log --prerelease 2>&1)
           if [[ $release_status == *"422"* ]]; then
