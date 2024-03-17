@@ -27,7 +27,6 @@ jobs:
         node-version: [20.x]
     steps:
       - name: Downloading artifacts from releases
-        if: ${{ inputs.source == 'releases' && github.event_name == 'workflow_dispatch' }}
         run: |
           LATEST_RELEASE_TAG=$(gh release list --exclude-drafts --exclude-pre-releases --json isLatest,tagName --jq '.[]| select(.isLatest)|.tagName')
           echo "latest release found is $LATEST_RELEASE_TAG"
