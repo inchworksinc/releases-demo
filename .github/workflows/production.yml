@@ -28,6 +28,7 @@ jobs:
       slot_name: staging
       source: ${{ inputs.source }}
       artifact-identifier: ${{ inputs.artifact-identifier }}
+      environment: prd
     secrets: inherit
   # scheduledDeploy:
   #   # if: ${{ github.event_name == 'schedule' }}
