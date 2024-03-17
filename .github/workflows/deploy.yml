@@ -23,6 +23,10 @@ on:
         required: true
         description: release tag or workflow run number
         type: string
+      environment:
+        required: true
+        description: environment to deploy
+        type: string       
 
 env:
   RESOURCE_GROUP_NAME: rg-appserviceslots-dev-eastus2-01
