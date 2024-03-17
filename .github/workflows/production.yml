@@ -1,8 +1,8 @@
 name: prod-deploy
 on:
 #Commented out on schedule for the time being till we have the production environment ready.
-  # schedule:
-    # - cron: '*/20 * * * *' # every 20th min
+  schedule:
+    - cron: '*/20 * * * *' # every 20th min
   workflow_dispatch:
     inputs:
       source:
