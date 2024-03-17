@@ -19,16 +19,16 @@ permissions:
   contents: read
   actions: write
 jobs:
-  # deploy:
-  #   if: ${{ github.event_name == 'workflow_dispatch' }}
-  #   uses: inchworksinc/releases-demo/.github/workflows/deploy.yml@main
-  #   with:
-  #     template_file_path: infrastructure/app-service.bicep
-  #     package: app
-  #     slot_name: staging
-  #     source: ${{ inputs.source }}
-  #     artifact-identifier: ${{ inputs.artifact-identifier }}
-  #   secrets: inherit
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    uses: inchworksinc/releases-demo/.github/workflows/deploy.yml@main
+    with:
+      template_file_path: infrastructure/app-service.bicep
+      package: app
+      slot_name: staging
+      source: ${{ inputs.source }}
+      artifact-identifier: ${{ inputs.artifact-identifier }}
+    secrets: inherit
   scheduledDeploy:
     # if: ${{ github.event_name == 'schedule' }}
     uses: inchworksinc/releases-demo/.github/workflows/build-and-deploy.yml@main
