@@ -113,8 +113,8 @@ jobs:
         working-directory: ${{ env.APPLICATION_ARTIFACT_FOLDER }}/${{env.APP_FOLDER}}/site
       - name: Deploying the web application
         run: az webapp deploy --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --src-path ./${{env.APP_FOLDER}}.zip --slot ${{ inputs.slot_name }} --clean true --restart true --type zip --debug --async
-      - name: start slot
-        run: az webapp start --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --slot ${{ inputs.slot_name }} --debug
+      # - name: start slot
+      #   run: az webapp start --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --slot ${{ inputs.slot_name }} --debug
       - name: Checking health endpoint of the app
         run: |
           timeout --foreground -s TERM 300s bash -c \
@@ -133,14 +133,8 @@ jobs:
           URL: https://${{ env.APP_NAME }}-${{ inputs.slot_name }}.azurewebsites.net
       - name: Swap slots
         run: az webapp deployment slot swap -s staging -n ${{ env.APP_NAME }} -g ${{ env.RESOURCE_GROUP_NAME }} --target-slot production
-      - name: Login to Azure again
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.CLIENT_ID }}
-          tenant-id: ${{ secrets.TENANT_ID }}
-          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
-      - name: Stop slot 
-        run: az webapp stop --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --slot staging
+      # - name: Stop slot 
+      #   run: az webapp stop --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.APP_NAME }} --slot staging
       - name: Mark release latest
         if: ${{ inputs.environment == 'prd' }}
         run: |

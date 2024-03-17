@@ -1,5 +1,8 @@
 name: prod-deploy
 on:
+#Commented out on schedule for the time being till we have the production environment ready.
+  # schedule:
+    # - cron: '*/20 * * * *' # every 20th min
   workflow_dispatch:
     inputs:
       source:
@@ -18,6 +21,7 @@ permissions:
   actions: write
 jobs:
   deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     uses: inchworksinc/releases-demo/.github/workflows/deploy.yml@main
     with:
       template_file_path: infrastructure/app-service.bicep
@@ -26,3 +30,14 @@ jobs:
       source: ${{ inputs.source }}
       artifact-identifier: ${{ inputs.artifact-identifier }}
     secrets: inherit
+  scheduledDeploy:
+    if: ${{ github.event_name == 'schedule' }}
+    uses: inchworksinc/releases-demo/.github/workflows/build-and-deploy.yml@main
+    with:
+      template_file_path: infrastructure/app-service.bicep
+      slot_name: staging
+    secrets: inherit
+
+    
+
+
