@@ -45,6 +45,16 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'schedule' }}
     steps:
+      - name: Waiting for approval on Production Deployment
+        if: ${{ inputs.environment == 'prd' }}
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: anjaneyalndatla
+          minimum-approvals: 1
+          issue-title: "Deploying ${{ inputs.artifact-identifier }} to production"
+          issue-body: "Please approve or deny the deployment of ${{ inputs.artifact-identifier }}. Approval keywords - approve, approved, lgtm, yes and Denied keywords deny, denied, no"
+          exclude-workflow-initiator-as-approver: false
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
