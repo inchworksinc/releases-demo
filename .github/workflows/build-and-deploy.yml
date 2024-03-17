@@ -30,7 +30,8 @@ jobs:
         if: ${{ inputs.source == 'releases' && github.event_name == 'workflow_dispatch' }}
         run: |
           LATEST_RELEASE_TAG=$(gh release list --exclude-drafts --exclude-pre-releases --json isLatest,tagName --jq '.[]| select(.isLatest)|.tagName')
-          gh release download ${ LATEST_RELEASE_TAG } --repo ${{ env.REPOSITORY_URL }}
+          echo "latest release found is $LATEST_RELEASE_TAG"
+          gh release download $LATEST_RELEASE_TAG --repo ${{ env.REPOSITORY_URL }}
           mkdir ${{env.APPLICATION_ARTIFACT_FOLDER}}
           unzip app*.zip -d ${{ env.APPLICATION_ARTIFACT_FOLDER }}
         env: 
