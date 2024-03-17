@@ -1,7 +1,7 @@
 name: prod-deploy
 on:
-  schedule:
-    - cron: '*/20 * * * *' # every 20th min
+  # schedule:
+  #   - cron: '*/20 * * * *' # every 20th min
   workflow_dispatch:
     inputs:
       source:
