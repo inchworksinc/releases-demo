@@ -32,7 +32,9 @@ jobs:
           echo "latest release found is $LATEST_RELEASE_TAG"
           gh release download $LATEST_RELEASE_TAG -R ${{ env.REPOSITORY_URL }} -A zip
           mkdir ${{env.APPLICATION_ARTIFACT_FOLDER}}
-          unzip release*.zip -d ${{ env.APPLICATION_ARTIFACT_FOLDER }}
+          unzip releases*.zip -d ${{ env.APPLICATION_ARTIFACT_FOLDER }}
+          mv ${{env.APPLICATION_ARTIFACT_FOLDER}}/releases*/* ${{env.APPLICATION_ARTIFACT_FOLDER}}
+          rm -rf releases*
         env: 
           GH_TOKEN: ${{ github.token }}
       - name: Setup Node.js ${{ matrix.node-version }}
