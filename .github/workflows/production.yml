@@ -29,13 +29,13 @@ jobs:
       source: ${{ inputs.source }}
       artifact-identifier: ${{ inputs.artifact-identifier }}
     secrets: inherit
-  scheduledDeploy:
-    # if: ${{ github.event_name == 'schedule' }}
-    uses: inchworksinc/releases-demo/.github/workflows/build-and-deploy.yml@main
-    with:
-      template_file_path: infrastructure/app-service.bicep
-      slot_name: staging
-    secrets: inherit
+  # scheduledDeploy:
+  #   # if: ${{ github.event_name == 'schedule' }}
+  #   uses: inchworksinc/releases-demo/.github/workflows/build-and-deploy.yml@main
+  #   with:
+  #     template_file_path: infrastructure/app-service.bicep
+  #     slot_name: staging
+  #   secrets: inherit
 
     
 
