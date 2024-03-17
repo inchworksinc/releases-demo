@@ -30,7 +30,7 @@ jobs:
         run: |
           LATEST_RELEASE_TAG=$(gh release list --exclude-drafts --exclude-pre-releases --json isLatest,tagName --jq '.[]| select(.isLatest)|.tagName')
           echo "latest release found is $LATEST_RELEASE_TAG"
-          gh release download $LATEST_RELEASE_TAG --repo ${{ env.REPOSITORY_URL }} -A zip
+          gh release download $LATEST_RELEASE_TAG -R ${{ env.REPOSITORY_URL }} -A zip
           mkdir ${{env.APPLICATION_ARTIFACT_FOLDER}}
           unzip release*.zip -d ${{ env.APPLICATION_ARTIFACT_FOLDER }}
         env: 
