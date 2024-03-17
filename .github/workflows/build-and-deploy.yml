@@ -30,9 +30,9 @@ jobs:
         run: |
           LATEST_RELEASE_TAG=$(gh release list --exclude-drafts --exclude-pre-releases --json isLatest,tagName --jq '.[]| select(.isLatest)|.tagName')
           echo "latest release found is $LATEST_RELEASE_TAG"
-          gh release download $LATEST_RELEASE_TAG --repo ${{ env.REPOSITORY_URL }}
+          gh release download $LATEST_RELEASE_TAG --repo ${{ env.REPOSITORY_URL }} -A zip
           mkdir ${{env.APPLICATION_ARTIFACT_FOLDER}}
-          unzip app*.zip -d ${{ env.APPLICATION_ARTIFACT_FOLDER }}
+          unzip release*.zip -d ${{ env.APPLICATION_ARTIFACT_FOLDER }}
         env: 
           GH_TOKEN: ${{ github.token }}
       - name: Setup Node.js ${{ matrix.node-version }}
