@@ -59,6 +59,8 @@ jobs:
       #     issue-title: "Deploying ${{ inputs.artifact-identifier }} to production"
       #     issue-body: "Please approve or deny the deployment of ${{ inputs.artifact-identifier }}. Approval keywords - approve, approved, lgtm, yes and Denied keywords deny, denied, no"
       #     exclude-workflow-initiator-as-approver: false
+      - name: echo
+        run: echo "Trigger ${{ github.GITHUB_ACTOR }}"
       - name: Check user previleges
         if: ${{ inputs.environment == 'prd' }}
         run: |
