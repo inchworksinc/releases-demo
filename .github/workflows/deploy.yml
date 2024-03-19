@@ -60,12 +60,12 @@ jobs:
       #     issue-body: "Please approve or deny the deployment of ${{ inputs.artifact-identifier }}. Approval keywords - approve, approved, lgtm, yes and Denied keywords deny, denied, no"
       #     exclude-workflow-initiator-as-approver: false
       - name: echo
-        run: echo "Trigger ${{ github.GITHUB_ACTOR }}"
+        run: echo "Trigger ${{ github.actor }}"
       - name: Check user previleges
         if: ${{ inputs.environment == 'prd' }}
         run: |
-          echo "Trigger ${{github.GITHUB_ACTOR}}"
-          gh api --verbose -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /orgs/inchworksinc/teams/inchworks-developers/memberships/${{github.GITHUB_ACTOR}}
+          echo "Trigger ${{github.actor}}"
+          gh api --verbose -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /orgs/inchworksinc/teams/inchworks-developers/memberships/${{github.actor}}
         env:
           GH_TOKEN: ${{ secrets.READORG_TOKEN }}          
       - name: Setup Node.js ${{ matrix.node-version }}
