@@ -27,4 +27,5 @@ jobs:
       slot_name: staging
       source: ${{ inputs.source }}
       artifact-identifier: ${{ inputs.artifact-identifier }}
+      environment: dev
     secrets: inherit
